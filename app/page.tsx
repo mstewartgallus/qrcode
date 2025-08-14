@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
+import FiniteField from "@/lib/FiniteField";
 
 const IndexPage = () =>
     <>
-    QR Code TODO
     </>;
 
 export default IndexPage;
