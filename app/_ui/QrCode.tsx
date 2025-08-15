@@ -4,24 +4,18 @@ import qrcode from "qrcode-generator";
 import { useMemo } from "react";
 
 interface Props {
-    label: string;
     value: string;
 }
-const QrCode = ({ label, value }: Props) => {
+const QrCode = ({ value }: Props) => {
     const svg = useMemo(() => {
         const qr = qrcode(4, 'H')
         qr.addData(value);
         qr.make();
-        return qr.createSvgTag(17, 0);
+        // FIXME fix scaling
+        return qr.createSvgTag(6.4, 0);
     }, [value]);
 
-    return <main>
-        <header>
-           <h1>{label}</h1>
-           <p>{value}</p>
-        </header>
-        <div dangerouslySetInnerHTML={{__html: svg}} />
-    </main>;
+    return <div dangerouslySetInnerHTML={{__html: svg}} />;
 };
 
 export default QrCode;
