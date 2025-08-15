@@ -1,10 +1,9 @@
 "use client";
 
-import type { ChangeEvent, MouseEvent, FormEvent } from "react";
-import type { FrameHandle } from "../Frame";
-import Frame from "../Frame";
+import type { ReactNode, ChangeEvent, MouseEvent, FormEvent } from "react";
 import Sticker from "../Sticker";
-import { useCallback, useId, useRef, useState } from "react";
+import { useCallback, useMemo, useId, useState } from "react";
+import { createRoot } from "react-dom/client";
 
 import styles from "./Form.module.css";
 
@@ -12,7 +11,7 @@ const titlePlaceholder = "The Art of War";
 const authorPlaceholder = "Sun Tzu";
 const hrefPlaceholder = "https://www.gutenberg.org/ebooks/132";
 
-const style = `
+const stickerStyle = `
 html,
 body {
     display: block;
@@ -47,26 +46,59 @@ body {
    justify-content: center;
    align-items: center;
 }
-header {
-   margin-bottom: 0.05in;
-}
-h1, p {
-   all: unset;
-   display: block;
-   word-break: break-all;
-}
-.title {
-   font-style: italic;
-}
-.href {
-   clear: both;
-}
-img {
-   float: right;
-   width: 0.47in;
-   height: 0.47in;
-}
 `;
+
+const schedule = async () => {
+     await new Promise<void>(res => setTimeout(() => res(), 0));
+};
+
+const renderString = async (children: ReactNode) => {
+    const iframe = document.createElement('iframe');
+    iframe.hidden = true;
+    const body = document.body;
+    body.appendChild(iframe);
+
+    const doc = iframe.contentDocument!;
+    doc.location = '';
+    try {
+        const root = createRoot(doc.documentElement);
+        try {
+            root.render(children);
+
+            await schedule();
+
+            return doc.documentElement.outerHTML;
+        } finally {
+            root.unmount();
+        }
+    } finally {
+        body.removeChild(iframe);
+    }
+};
+
+const print = async (children: ReactNode) => {
+    const iframe = document.createElement('iframe');
+    iframe.hidden = true;
+    const body = document.body;
+    body.appendChild(iframe);
+
+    const doc = iframe.contentDocument!;
+    doc!.location = '';
+    try {
+        const root = createRoot(doc.documentElement);
+        try {
+            root.render(children);
+
+            await schedule();
+
+            iframe.contentWindow?.print();
+        } finally {
+            root.unmount();
+        }
+    } finally {
+        body.removeChild(iframe);
+    }
+};
 
 const chooseFile = async (accept: string) => {
     const input = document.createElement('input');
@@ -85,16 +117,47 @@ const chooseFile = async (accept: string) => {
     return [...files];
 };
 
+// FIXME... use data uri?
+const download = (name: string, content: string) => {
+    const url = URL.createObjectURL(new Blob([content]));
+    try {
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = name;
+        anchor.click();
+    } finally {
+        URL.revokeObjectURL(url);
+    }
+};
+
 const accept = `image/*`;
 
 const Form = () => {
-    const ref = useRef<FrameHandle>(null);
 
     const [title, setTitle] = useState<string | null>(null);
     const [author, setAuthor] = useState<string | null>(null);
     const [href, setHref] = useState<string | null>(null);
     const [name, setName] = useState<string | null>(null);
     const [image, setImage] = useState<string | null>(null);
+
+    const sticker = useMemo(() => {
+        return <Sticker
+       image={image ?? undefined}
+       title={title ?? titlePlaceholder}
+       author={author ?? authorPlaceholder}
+        href={href ?? hrefPlaceholder} />;
+    }, [image, title, author, href]);
+
+    const stickerDoc = useMemo(() => {
+        return <>
+           <head>
+              <style>{stickerStyle}</style>
+           </head>
+           <body>
+               {sticker}
+           </body>
+            </>;
+    }, [sticker]);
 
     const onChangeTitle = useCallback((event: ChangeEvent<HTMLInputElement>) => {
         event.preventDefault();
@@ -109,15 +172,15 @@ const Form = () => {
         setHref(event.target.value);
     }, []);
 
-    const onSubmit = useCallback((event: FormEvent<HTMLFormElement>) => {
+    const onSubmit = useCallback(async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        ref.current!.save('agitprop');
-    }, []);
+        download('agitprop.html', await renderString(stickerDoc));
+    }, [stickerDoc]);
 
     const onClickPrint = useCallback((event: MouseEvent<HTMLButtonElement>) => {
         event.preventDefault();
-        ref.current!.print();
-    }, []);
+        print(stickerDoc);
+    }, [stickerDoc]);
 
     const uploadAction = useCallback(async () => {
         const file = (await chooseFile(accept))[0];
@@ -162,18 +225,17 @@ const Form = () => {
         </fieldset>
         <fieldset>
            <div>
-              <button value="save">Download</button>
+              <button value="save">Download Sticker</button>
            </div>
            <div>
-              <button value="print" onClick={onClickPrint}>Print</button>
+              <button value="print" onClick={onClickPrint}>Print Sticker</button>
            </div>
         </fieldset>
         <output className={styles.output} aria-labelledby={stickerHeading}>
            <h2 id={stickerHeading}>Sticker Format 2.4&quot;</h2>
-           <Frame ref={ref} width={240} height={346} head={<style>{style}</style>}>
-               <Sticker image={image ?? undefined} title={title ?? titlePlaceholder} author={author ?? authorPlaceholder}
-                href={href ?? hrefPlaceholder} />
-            </Frame>
+           <div className={styles.sticker}>
+              {sticker}
+           </div>
         </output>
    </form>
 };

@@ -5,3 +5,12 @@
     display: block;
     margin-inline-start: 1em;
 }
+
+.sticker {
+    overflow: hidden;
+    width: 2.4in;
+    height: 3.4in;
+    outline-style: solid;
+    height: 3.4in;
+    padding: 0.1in;
+}
