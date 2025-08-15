@@ -29,8 +29,7 @@ export default class FiniteField implements Field<number> {
             exp[(exponent + 255) | 0] = value;
             log[value] = exponent;
 
-            value = value > 127 ? ((value << 1) ^ 285) : value << 1;
-            // value = slow.mul(alpha, value);
+            value = slow.mul(alpha, value);
         }
         log[0] = 255;
 

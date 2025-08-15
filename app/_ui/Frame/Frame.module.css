@@ -1,0 +1,7 @@
+.frame {
+    all: unset;
+    outline-style: solid;
+    /* FIXME... use inches */
+    width: 700px;
+    height: 700px;
+}

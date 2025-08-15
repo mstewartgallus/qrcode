@@ -9,7 +9,19 @@ interface Props {
 const RootLayout = ({ children }: Readonly<Props>) =>
     <html lang="en">
         <body>
-            {children}
+            <main>
+               {children}
+            </main>
+            <footer>
+                <dl>
+                    <dt>Key Dependencies:</dt>
+                    <dd>
+                       <a href="https://www.npmjs.com/package/qrcode-generator">
+                          QR Code Generator
+                       </a>
+                    </dd>
+                </dl>
+            </footer>
         </body>
     </html>;
 

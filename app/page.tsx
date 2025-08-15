@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
-import FiniteField from "@/lib/FiniteField";
+import Form from "./_ui/Form";
 
 const IndexPage = () =>
     <>
+    <h1>Agit-Prop Generator</h1>
+    <Form />
     </>;
 
 export default IndexPage;
 
 export const metadata: Metadata = {
-  title: "QR Code"
+  title: "Agit-Prop Generator"
 };

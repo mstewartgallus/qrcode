@@ -1,0 +1,7 @@
+.input {
+    min-inline-size: 30em;
+}
+.output {
+    display: flex;
+    justify-content: center;
+}

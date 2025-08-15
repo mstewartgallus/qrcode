@@ -75,12 +75,12 @@ export default class FiniteFieldSlow implements Field<number> {
         this.poly = poly;
     }
 
-    neg(x: number) {
-        return x;
+    inv(): number {
+        throw 'todo';
     }
 
-    inv(x: number): number {
-        throw new Error("fixme implement");
+    neg(x: number) {
+        return x;
     }
 
     add(x: number, y: number) {

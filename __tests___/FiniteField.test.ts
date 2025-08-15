@@ -53,7 +53,7 @@ describe('FiniteFieldSlow', () => {
 
     // FIXME
     if (false) {
-        for (const [x, y, z] of zip(randomBytes(), randomBytes(), randomBytes())) {
+        for (const [x, [y, z]] of zip(randomBytes(), zip(randomBytes(), randomBytes()))) {
             it(`${x}·(${y}·${z}) = (${x}·${y})·${z}`, () => {
                 assocs(slow, x, y, z);
             });
@@ -72,7 +72,7 @@ describe('FiniteFieldSlow', () => {
         });
     }
 
-    for (const [x, y, z] of zip(randomBytes(), randomBytes(), randomBytes())) {
+    for (const [x, [y, z]] of zip(randomBytes(), zip(randomBytes(), randomBytes()))) {
         it(`${x} + (${y} + ${z}) = (${x} + ${y}) + ${z}`, () => {
             assocs(new Exp(slow), x, y, z);
 
@@ -93,7 +93,7 @@ describe('FiniteFieldSlow', () => {
 
     // FIXME
     if (false) {
-        for (const [x, y, z] of zip(randomBytes(), randomBytes(), randomBytes())) {
+        for (const [x, [y, z]] of zip(randomBytes(), zip(randomBytes(), randomBytes()))) {
             it(`${x}·(${y} + ${z}) = ${x}·${y} + ${x}·${z}`, () => {
                 rightDistributes(slow, x, y, z);
             });

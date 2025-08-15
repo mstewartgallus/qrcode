@@ -1,14 +1,14 @@
-const zip = function *<T>(...its: [Iterable<T>]): [T] {
+const zip = function *<S, T>(x: Iterator<S>, y: Iterator<T>): Generator<[S, T]> {
     for (;;) {
-        const tuple = Array(its.length);
-        for (const [ii, it] of its.entries()) {
-            const result = it.next();
-            if (result.done) {
-                return;
-            }
-            tuple[ii] = result.value;
+        const xResult = x.next();
+        if (xResult.done) {
+            return;
         }
-        yield tuple;
+        const yResult = y.next();
+        if (xResult.done) {
+            return;
+        }
+        yield [xResult.value, yResult.value];
     }
 };
 
