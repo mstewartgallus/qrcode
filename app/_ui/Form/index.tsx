@@ -205,38 +205,32 @@ const Form = () => {
     const stickerHeading = useId();
     // FIXME create a hidden iframe in the background to save and print
     return <form onSubmit={onSubmit}>
-        <fieldset>
-           <div>
-              <label>Title</label>
-              <input className={styles.input} required maxLength={25} type="text" name="title" placeholder={titlePlaceholder} value={title ?? ''} onChange={onChangeTitle} />
-           </div>
-           <div>
-              <label>Author</label>
-        <input className={styles.input} required maxLength={25} type="text" name="author" placeholder={authorPlaceholder} value={author ?? ''} onChange={onChangeAuthor} />
-           </div>
-           <div>
-              <label>Url</label>
-              <input className={styles.input} required maxLength={78} type="url" name="value" placeholder={hrefPlaceholder} value={href ?? ''} onChange={onChangeValue}  />
-            </div>
-            <div>
-              <label>{name ? name : 'No Selection'}</label>
-              <button onClick={uploadAction}>Select Image</button>
-            </div>
+        <fieldset className={styles.inputs}>
+           <label>Title</label>
+           <input className={styles.input} required maxLength={25} type="text" name="title" placeholder={titlePlaceholder} value={title ?? ''} onChange={onChangeTitle} />
+           <label>Author</label>
+           <input className={styles.input} required maxLength={25} type="text" name="author" placeholder={authorPlaceholder} value={author ?? ''} onChange={onChangeAuthor} />
+           <label>Url</label>
+           <input className={styles.input} required maxLength={78} type="url" name="value" placeholder={hrefPlaceholder} value={href ?? ''} onChange={onChangeValue}  />
+           <label>{name ? name : 'No Selection'}</label>
+           <button className={styles.inputButton} onClick={uploadAction}>Select Image</button>
         </fieldset>
-        <fieldset>
-           <div>
-              <button value="save">Download Sticker</button>
-           </div>
-           <div>
-              <button value="print" onClick={onClickPrint}>Print Sticker</button>
-           </div>
-        </fieldset>
-        <output className={styles.output} aria-labelledby={stickerHeading}>
-           <h2 id={stickerHeading}>Sticker Format 2.4&quot;</h2>
-           <div className={styles.sticker}>
-              {sticker}
-           </div>
-        </output>
+        <section className={styles.output} aria-labelledby={stickerHeading}>
+           <h2 id={stickerHeading}>Sticker Format 2.4&quot;×3.4&quot;</h2>
+           <fieldset className={styles.buttons}>
+              <div>
+                 <button value="save">Download Sticker</button>
+              </div>
+              <div>
+                 <button value="print" onClick={onClickPrint}>Print Sticker</button>
+              </div>
+           </fieldset>
+           <output>
+               <div className={styles.sticker}>
+                  {sticker}
+               </div>
+            </output>
+        </section>
    </form>
 };
 

@@ -7,10 +7,31 @@
 }
 
 .sticker {
+    outline-style: solid;
     overflow: hidden;
     width: 2.4in;
     height: 3.4in;
-    outline-style: solid;
-    height: 3.4in;
     padding: 0.1in;
+}
+
+.inputs {
+    all: unset;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    max-inline-size: 40em;
+    column-gap: 2em;
+}
+.buttons {
+    all: unset;
+    display: flex;
+    gap: 1em;
+    margin-block: 1em;
+}
+
+.inputs {
+    margin-inline: 1em;
+}
+
+.input, .inputButton {
+    justify-self: start;
 }
