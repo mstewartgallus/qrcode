@@ -1,7 +1,7 @@
 "use client";
 
 import qrcode from "qrcode-generator";
-import { useMemo, useRef } from "react";
+import { useMemo } from "react";
 
 interface Props {
     label: string;
