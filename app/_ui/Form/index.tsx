@@ -8,8 +8,9 @@ import { useCallback, useId, useRef, useState } from "react";
 
 import styles from "./Form.module.css";
 
-const labelPlaceholder = "Example Website";
-const valuePlaceholder = "https://example.org";
+const titlePlaceholder = "The Art of War";
+const authorPlaceholder = "Sun Tzu";
+const hrefPlaceholder = "https://www.gutenberg.org/ebooks/132";
 
 const style = `
 html,
@@ -24,14 +25,14 @@ body {
     box-sizing: border-box;
 }
 @page {
-   size: 2.4in 2.94in;
+   size: 2.4in 3.4in;
    margin: 0.1in;
 }
 @media screen {
    main {
       overflow: hidden;
       width: 2.4in;
-      height: 2.94in;
+      height: 3.4in;
       padding: 0.1in;
    }
    body {
@@ -52,9 +53,18 @@ header {
 h1, p {
    all: unset;
    display: block;
+   word-break: break-all;
+}
+.title {
+   font-style: italic;
+}
+.href {
+   clear: both;
 }
 img {
-  float: right;
+   float: right;
+   width: 0.47in;
+   height: 0.47in;
 }
 `;
 
@@ -75,23 +85,28 @@ const chooseFile = async (accept: string) => {
     return [...files];
 };
 
-const accept = `image/png`;
+const accept = `image/*`;
 
 const Form = () => {
     const ref = useRef<FrameHandle>(null);
 
-    const [label, setLabel] = useState<string | null>(null);
-    const [value, setValue] = useState<string | null>(null);
+    const [title, setTitle] = useState<string | null>(null);
+    const [author, setAuthor] = useState<string | null>(null);
+    const [href, setHref] = useState<string | null>(null);
     const [name, setName] = useState<string | null>(null);
     const [image, setImage] = useState<string | null>(null);
 
-    const onChangeLabel = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    const onChangeTitle = useCallback((event: ChangeEvent<HTMLInputElement>) => {
         event.preventDefault();
-        setLabel(event.target.value);
+        setTitle(event.target.value);
+    }, []);
+    const onChangeAuthor = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+        event.preventDefault();
+        setAuthor(event.target.value);
     }, []);
     const onChangeValue = useCallback((event: ChangeEvent<HTMLInputElement>) => {
         event.preventDefault();
-        setValue(event.target.value);
+        setHref(event.target.value);
     }, []);
 
     const onSubmit = useCallback((event: FormEvent<HTMLFormElement>) => {
@@ -125,16 +140,20 @@ const Form = () => {
     }, []);
 
     const stickerHeading = useId();
-    // FIXME... add image file picker..
+    // FIXME create a hidden iframe in the background to save and print
     return <form onSubmit={onSubmit}>
         <fieldset>
            <div>
-              <label>Label</label>
-        <input className={styles.input} required maxLength={25} type="text" name="label" placeholder={labelPlaceholder} value={label ?? ''} onChange={onChangeLabel} />
+              <label>Title</label>
+              <input className={styles.input} required maxLength={25} type="text" name="title" placeholder={titlePlaceholder} value={title ?? ''} onChange={onChangeTitle} />
            </div>
            <div>
-              <label>Value</label>
-              <input className={styles.input} required type="url" name="value" placeholder={valuePlaceholder} value={value ?? ''} onChange={onChangeValue}  />
+              <label>Author</label>
+        <input className={styles.input} required maxLength={25} type="text" name="author" placeholder={authorPlaceholder} value={author ?? ''} onChange={onChangeAuthor} />
+           </div>
+           <div>
+              <label>Url</label>
+              <input className={styles.input} required maxLength={78} type="url" name="value" placeholder={hrefPlaceholder} value={href ?? ''} onChange={onChangeValue}  />
             </div>
             <div>
               <label>{name ? name : 'No Selection'}</label>
@@ -143,7 +162,7 @@ const Form = () => {
         </fieldset>
         <fieldset>
            <div>
-              <button value="save">Save</button>
+              <button value="save">Download</button>
            </div>
            <div>
               <button value="print" onClick={onClickPrint}>Print</button>
@@ -151,9 +170,9 @@ const Form = () => {
         </fieldset>
         <output className={styles.output} aria-labelledby={stickerHeading}>
            <h2 id={stickerHeading}>Sticker Format 2.4&quot;</h2>
-           <Frame ref={ref} width={231} height={346} head={<style>{style}</style>}>
-               <Sticker image={image ?? undefined} label={label ?? labelPlaceholder}
-                value={value ?? valuePlaceholder} />
+           <Frame ref={ref} width={240} height={346} head={<style>{style}</style>}>
+               <Sticker image={image ?? undefined} title={title ?? titlePlaceholder} author={author ?? authorPlaceholder}
+                href={href ?? hrefPlaceholder} />
             </Frame>
         </output>
    </form>

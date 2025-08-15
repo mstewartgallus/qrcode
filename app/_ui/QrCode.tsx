@@ -8,7 +8,7 @@ interface Props {
 }
 const QrCode = ({ value }: Props) => {
     const svg = useMemo(() => {
-        const qr = qrcode(4, 'H')
+        const qr = qrcode(4, 'L')
         qr.addData(value);
         qr.make();
         // FIXME fix scaling

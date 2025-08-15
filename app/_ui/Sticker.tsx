@@ -1,24 +1,25 @@
 "use client";
 
 import QrCode from "./QrCode";
-import { useMemo } from "react";
 
 interface Props {
     image?: string;
-    label: string;
-    value: string;
+    title: string;
+    author: string;
+    href: string;
 }
 
-const Sticker = ({ image, label, value }: Props) => {
+const Sticker = ({ image, title, author, href }: Props) => {
     return <main>
        <header>
           { image && <img alt="" src={image} width={40} height={40} /> }
            <hgroup>
-               <h1>{label}</h1>
-               <p>{value}</p>
+               <h1 className="title">{title}</h1>
+               <p className="author">{author}</p>
+               <p className="href">{href}</p>
            </hgroup>
         </header>
-        <QrCode value={value} />
+        <QrCode value={href} />
         </main>;
 };
 
