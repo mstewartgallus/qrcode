@@ -2,7 +2,7 @@
 
 import type { ReactNode, ChangeEvent } from "react";
 import Sticker from "../Sticker";
-import { useCallback, useMemo, useId, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useMemo, useId, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import qrcode from "qrcode-generator";
 
@@ -12,7 +12,9 @@ const titlePlaceholder = "The Art of War";
 const authorPlaceholder = "Sun Tzu";
 const hrefPlaceholder = "https://www.gutenberg.org/ebooks/132";
 
-const stickerStyle = `
+const stickerStyle = (height: number) => {
+    const heightStr = height.toFixed(2);
+    return `
 html,
 body {
     display: block;
@@ -25,13 +27,13 @@ body {
     box-sizing: border-box;
 }
 @page {
-   size: 2.4in 3.9in;
+   size: 2.4in ${heightStr}in;
    margin: 0.1in;
 }
 @media screen {
    main {
       width: 2.4in;
-      height: 3.9in;
+      height: ${heightStr}in;
       padding: 0.1in;
   }
 }
@@ -52,6 +54,7 @@ body {
    align-items: center;
 }
 `;
+};
 
 const schedule = async (timeout: number = 500) => {
     // FIXME... ugly hack
@@ -160,10 +163,19 @@ const Form = () => {
         href={url} />;
     }, [image, title, author, url, qr]);
 
+
+    const stickerRef = useRef<HTMLElement>(null);
+    const [height, setHeight] = useState<number | null>(null);
+    useLayoutEffect(() => {
+        // FIXME... this is ick
+        const height = stickerRef.current!.offsetHeight / 96;
+        setHeight(height);
+    }, [url, title, author, href]);
+
     const stickerDoc = useMemo(() => {
         return <>
            <head>
-              <style>{stickerStyle}</style>
+            <style>{stickerStyle(height ?? 3.19)}</style>
            </head>
             <body>
               <main>
@@ -171,7 +183,7 @@ const Form = () => {
               </main>
            </body>
             </>;
-    }, [sticker]);
+    }, [sticker, height]);
 
     const onChangeTitle = useCallback((event: ChangeEvent<HTMLInputElement>) => {
         event.preventDefault();
@@ -228,7 +240,7 @@ const Form = () => {
            <input accept={accept} ref={fileRef} required type="file" onChange={onChangeFile} />
         </fieldset>
         <section className={styles.output} aria-labelledby={stickerHeading}>
-           <h2 id={stickerHeading}>Sticker Format 2.4&quot;×3.9&quot;</h2>
+           <h2 id={stickerHeading}>Sticker Format 2.4&quot;×{(height ?? 3.19).toFixed(2)}&quot;</h2>
            <fieldset className={styles.buttons}>
               <div>
                  <button value="print">Print Sticker</button>
@@ -237,7 +249,7 @@ const Form = () => {
                  <button value="download" formAction={downloadAction}>Download Sticker</button>
               </div>
            </fieldset>
-              <section className={styles.sticker}>
+               <section className={styles.sticker} ref={stickerRef}>
                  {sticker}
                </section>
         </section>

@@ -75,7 +75,7 @@ interface Props {
 
 const Sticker = ({ image = noImage.src, title, author, href, qr }: Props) => {
     return <>
-        <header style={{ marginBottom: '0.05in' }}>
+        <header style={{ paddingBottom: '0.05in' }}>
            <hgroup style={{ wordBreak: 'break-all' }}>
                <h1 style={{all: 'unset', display: 'inline', fontStyle: 'italic'}}>{title}</h1>
                <p style={{all: 'unset', display: 'inline'}}>{author}</p>
