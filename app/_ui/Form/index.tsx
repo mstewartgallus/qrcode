@@ -52,14 +52,15 @@ const schedule = async () => {
      await new Promise<void>(res => setTimeout(() => res(), 0));
 };
 
-const renderString = async (children: ReactNode) => {
+const renderDoc = async (children: ReactNode) => {
     const iframe = document.createElement('iframe');
     iframe.hidden = true;
     const body = document.body;
     body.appendChild(iframe);
 
+    // FIXME.. this seems ick
     const doc = iframe.contentDocument!;
-    doc.location = '';
+    doc!.location = '';
     try {
         const root = createRoot(doc.documentElement);
         try {
@@ -142,9 +143,9 @@ const Form = () => {
 
     const sticker = useMemo(() => {
         return <Sticker
-       image={image ?? undefined}
-       title={title ?? titlePlaceholder}
-       author={author ?? authorPlaceholder}
+        image={image ?? undefined}
+        title={title ?? titlePlaceholder}
+        author={author ?? authorPlaceholder}
         href={href ?? hrefPlaceholder} />;
     }, [image, title, author, href]);
 
@@ -153,8 +154,10 @@ const Form = () => {
            <head>
               <style>{stickerStyle}</style>
            </head>
-           <body>
-               {sticker}
+            <body>
+              <main>
+                {sticker}
+              </main>
            </body>
             </>;
     }, [sticker]);
@@ -174,7 +177,7 @@ const Form = () => {
 
     const onSubmit = useCallback(async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        download('agitprop.html', await renderString(stickerDoc));
+        download('agitprop.html', await renderDoc(stickerDoc));
     }, [stickerDoc]);
 
     const onClickPrint = useCallback((event: MouseEvent<HTMLButtonElement>) => {
@@ -226,9 +229,9 @@ const Form = () => {
               </div>
            </fieldset>
            <output>
-               <div className={styles.sticker}>
-                  {sticker}
-               </div>
+              <section className={styles.sticker}>
+                 {sticker}
+               </section>
             </output>
         </section>
    </form>

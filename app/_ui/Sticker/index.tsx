@@ -1,6 +1,9 @@
 "use client";
 
-import QrCode from "./QrCode";
+import qrCodeUri from "@/lib/qrCodeUri";
+import Image from "next/image";
+import { useMemo } from "react";
+import noImage from "./no-image.svg";
 
 interface Props {
     image?: string;
@@ -10,17 +13,20 @@ interface Props {
 }
 
 const Sticker = ({ image, title, author, href }: Props) => {
-    return <main>
+    const src = useMemo(() => qrCodeUri(href, 'L'), [href]);
+    return <>
         <header style={{ marginBottom: '0.05in' }}>
-        { image && <img style={{width: '0.47in', height: '0.47in', float: 'right' }} alt="" src={image} width={40} height={40} /> }
+           <div style={{float: 'right' }}>
+              <Image src={image ?? noImage} width={40} height={40} alt="" />
+           </div>
            <hgroup style={{ wordBreak: 'break-all' }}>
                <h1 style={{all: 'unset', display: 'block', fontStyle: 'italic'}}>{title}</h1>
                <p style={{all: 'unset', display: 'block'}}>{author}</p>
                <p style={{all: 'unset', display: 'block', clear: 'both'}}>{href}</p>
            </hgroup>
         </header>
-        <QrCode value={href} />
-        </main>;
+        <img src={src} width={211} height={211} alt={href} />
+        </>;
 };
 
 export default Sticker;
