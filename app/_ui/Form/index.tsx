@@ -48,8 +48,9 @@ body {
 }
 `;
 
-const schedule = async () => {
-     await new Promise<void>(res => setTimeout(() => res(), 0));
+const schedule = async (timeout: number = 0) => {
+    // FIXME... ugly hack
+    await new Promise<void>(res => setTimeout(() => res(), timeout));
 };
 
 const renderDoc = async (children: ReactNode) => {
@@ -58,9 +59,7 @@ const renderDoc = async (children: ReactNode) => {
     const body = document.body;
     body.appendChild(iframe);
 
-    // FIXME.. this seems ick
     const doc = iframe.contentDocument!;
-    doc!.location = '';
     try {
         const root = createRoot(doc.documentElement);
         try {
@@ -79,12 +78,12 @@ const renderDoc = async (children: ReactNode) => {
 
 const print = async (children: ReactNode) => {
     const iframe = document.createElement('iframe');
-    iframe.hidden = true;
+    // work on Chrome
+    iframe.style.visibility = "hidden";
     const body = document.body;
     body.appendChild(iframe);
 
     const doc = iframe.contentDocument!;
-    doc!.location = '';
     try {
         const root = createRoot(doc.documentElement);
         try {
