@@ -16,7 +16,7 @@ const iter = <T,>(n: number, f: (ii: number) => T) => {
     return array as T[];
 };
 
-const finder = (count: number, ii: number, jj: number) => {
+const isPositionMarker = (count: number, ii: number, jj: number) => {
     // Upper left
     if (ii >= 2 && ii <= 4
         && jj >= 2 && jj <= 4) {
@@ -35,6 +35,7 @@ const finder = (count: number, ii: number, jj: number) => {
     return false;
 };
 
+
 interface QrCodeProps {
     qr: QrCodeIface;
     width: number;
@@ -49,7 +50,7 @@ const QrCode = ({ qr, width, image }: QrCodeProps) => {
         {
             iter(count, ii =>
                 iter(count, jj => {
-                    if (finder(count, ii, jj)) {
+                    if (isPositionMarker(count, ii, jj)) {
                         return;
                     }
                     if (!qr.isDark(ii, jj)) {
@@ -77,7 +78,7 @@ const Sticker = ({ image = noImage.src, title, author, href, qr }: Props) => {
     return <>
         <header style={{ paddingBottom: '0.05in' }}>
            <hgroup style={{ wordBreak: 'break-all' }}>
-               <h1 style={{all: 'unset', display: 'inline', fontStyle: 'italic'}}>{title}</h1>
+               <h3 style={{all: 'unset', display: 'inline', fontStyle: 'italic'}}>{title}</h3>
                <p style={{all: 'unset', display: 'inline'}}>&nbsp;{author}</p>
                <p style={{all: 'unset', display: 'block'}}>{href}</p>
            </hgroup>

@@ -135,15 +135,10 @@ const Form = () => {
     const [image, setImage] = useState<string | null>(null);
 
     const url = useMemo(() => {
-        // FIXME.. handle malformed url better.
-        const url = href ?? hrefPlaceholder;
-        try {
-            return new URL(url);
-        } catch (e) {
-            console.warn(e);
-            return new URL(hrefPlaceholder);
-        }
-    }, [href]).href;
+        // FIXME.. validate URL
+        const url = URL.canParse(href) ? new URL(href) : new URL(hrefPlaceholder);
+        return url.hostname + url.pathname;
+    }, [href]);
 
     const qr = useMemo(() => {
         const qr = qrcode(0, 'L')
@@ -236,7 +231,7 @@ const Form = () => {
            <input className={styles.input} required maxLength={40} type="text" name="author" placeholder={authorPlaceholder} value={author ?? ''} onChange={onChangeAuthor} />
            <label>Url</label>
            <input className={styles.input} required maxLength={160} type="url" name="value" placeholder={hrefPlaceholder} value={href ?? ''} onChange={onChangeValue}  />
-           <label>Tracker Square</label>
+           <label>Position Marker</label>
            <input accept={accept} ref={fileRef} required type="file" onChange={onChangeFile} />
         </fieldset>
         <section className={styles.output} aria-labelledby={stickerHeading}>
