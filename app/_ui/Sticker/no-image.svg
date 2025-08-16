@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   width="40px"
-   height="40px"
+   width="30"
+   height="30"
    viewbox="0 0 40 40"
-   fill="#000"
+   fill="#000000"
    version="1.1"
    id="svg1"
    sodipodi:docname="no-image.svg"
@@ -34,14 +34,14 @@
      inkscape:current-layer="svg1" />
   <text
      xml:space="preserve"
-     style="font-size:44.2416px;line-height:1.1;font-family:'Liberation Serif';-inkscape-font-specification:'Liberation Serif';fill:#000000;stroke:none;stroke-width:11.3199;stroke-linejoin:round;stroke-dasharray:2.26402, 3.39596, 1.13199, 7.92393, 3.39596, 9.05596, 1.13199, 2.26402;stroke-dashoffset:0"
-     x="-2.0738251"
-     y="35.600662"
+     style="font-size:33.1812px;line-height:1.1;font-family:'Liberation Serif';-inkscape-font-specification:'Liberation Serif';fill:#000000;stroke:none;stroke-width:8.48992;stroke-linejoin:round;stroke-dasharray:1.69802, 2.54697, 0.848992, 5.94295, 2.54697, 6.79197, 0.848992, 1.69802;stroke-dashoffset:0"
+     x="-1.5553688"
+     y="26.700485"
      id="text2"
-     transform="scale(0.98074687,1.0196311)"><tspan
+     transform="scale(0.98074736,1.0196306)"><tspan
        sodipodi:role="line"
        id="tspan2"
-       x="-2.0738251"
-       y="35.600662"
-       style="stroke-width:11.3199">遜</tspan></text>
+       x="-1.5553688"
+       y="26.700485"
+       style="stroke-width:8.48992">遜</tspan></text>
 </svg>

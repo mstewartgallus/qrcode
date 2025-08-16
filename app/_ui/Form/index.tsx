@@ -1,9 +1,10 @@
 "use client";
 
-import type { ReactNode, ChangeEvent, MouseEvent, FormEvent } from "react";
+import type { ReactNode, ChangeEvent } from "react";
 import Sticker from "../Sticker";
-import { useCallback, useMemo, useId, useState } from "react";
+import { useCallback, useMemo, useId, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
+import qrcode from "qrcode-generator";
 
 import styles from "./Form.module.css";
 
@@ -24,15 +25,19 @@ body {
     box-sizing: border-box;
 }
 @page {
-   size: 2.4in 3.4in;
+   size: 2.4in 3.9in;
    margin: 0.1in;
 }
 @media screen {
    main {
-      overflow: hidden;
       width: 2.4in;
-      height: 3.4in;
+      height: 3.9in;
       padding: 0.1in;
+  }
+}
+@media screen {
+   main {
+      overflow: hidden;
    }
    body {
       background-color: grey;
@@ -48,16 +53,19 @@ body {
 }
 `;
 
-const schedule = async (timeout: number = 0) => {
+const schedule = async (timeout: number = 500) => {
     // FIXME... ugly hack
     await new Promise<void>(res => setTimeout(() => res(), timeout));
 };
 
 const renderDoc = async (children: ReactNode) => {
     const iframe = document.createElement('iframe');
-    iframe.hidden = true;
+    iframe.style.visibility = "hidden";
+
     const body = document.body;
     body.appendChild(iframe);
+
+    await schedule();
 
     const doc = iframe.contentDocument!;
     try {
@@ -83,6 +91,8 @@ const print = async (children: ReactNode) => {
     const body = document.body;
     body.appendChild(iframe);
 
+    await schedule();
+
     const doc = iframe.contentDocument!;
     try {
         const root = createRoot(doc.documentElement);
@@ -98,23 +108,6 @@ const print = async (children: ReactNode) => {
     } finally {
         body.removeChild(iframe);
     }
-};
-
-const chooseFile = async (accept: string) => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = accept;
-    await new Promise<void>((res) => {
-        input.onchange = () => {
-            res();
-        };
-        input.click();
-    });
-    const files = input.files;
-    if (!files) {
-        return [];
-    }
-    return [...files];
 };
 
 // FIXME... use data uri?
@@ -133,20 +126,39 @@ const download = (name: string, content: string) => {
 const accept = `image/*`;
 
 const Form = () => {
-
     const [title, setTitle] = useState<string | null>(null);
     const [author, setAuthor] = useState<string | null>(null);
     const [href, setHref] = useState<string | null>(null);
-    const [name, setName] = useState<string | null>(null);
     const [image, setImage] = useState<string | null>(null);
+
+    const url = useMemo(() => {
+        // FIXME.. handle malformed url better.
+        const url = href ?? hrefPlaceholder;
+        try {
+            return new URL(url);
+        } catch (e) {
+            console.warn(e);
+            return new URL(hrefPlaceholder);
+        }
+    }, [href]).href;
+
+    const qr = useMemo(() => {
+        const qr = qrcode(0, 'L')
+        qr.addData(url);
+        qr.make();
+        return qr;
+    }, [url]);
+
+    // FIXME... track height for downloading/printing
 
     const sticker = useMemo(() => {
         return <Sticker
+        qr={qr}
         image={image ?? undefined}
         title={title ?? titlePlaceholder}
         author={author ?? authorPlaceholder}
-        href={href ?? hrefPlaceholder} />;
-    }, [image, title, author, href]);
+        href={url} />;
+    }, [image, title, author, url, qr]);
 
     const stickerDoc = useMemo(() => {
         return <>
@@ -174,19 +186,18 @@ const Form = () => {
         setHref(event.target.value);
     }, []);
 
-    const onSubmit = useCallback(async (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
+    const downloadAction = useCallback(async () => {
         download('agitprop.html', await renderDoc(stickerDoc));
     }, [stickerDoc]);
 
-    const onClickPrint = useCallback((event: MouseEvent<HTMLButtonElement>) => {
-        event.preventDefault();
+    const printAction = useCallback(() => {
         print(stickerDoc);
     }, [stickerDoc]);
 
-    const uploadAction = useCallback(async () => {
-        const file = (await chooseFile(accept))[0];
-        const name = file.name;
+    const fileRef = useRef<HTMLInputElement>(null);
+
+    const onChangeFile = useCallback(async () => {
+        const file = fileRef.current!.files![0];
 
         const data = await new Promise<string>(res => {
             const reader = new FileReader();
@@ -201,37 +212,34 @@ const Form = () => {
             reader.readAsDataURL(file);
         });
         setImage(data);
-        setName(name);
     }, []);
 
     const stickerHeading = useId();
-    // FIXME create a hidden iframe in the background to save and print
-    return <form onSubmit={onSubmit}>
+
+    return <form action={printAction}>
         <fieldset className={styles.inputs}>
            <label>Title</label>
-           <input className={styles.input} required maxLength={25} type="text" name="title" placeholder={titlePlaceholder} value={title ?? ''} onChange={onChangeTitle} />
+           <input className={styles.input} required maxLength={80} type="text" name="title" placeholder={titlePlaceholder} value={title ?? ''} onChange={onChangeTitle} />
            <label>Author</label>
-           <input className={styles.input} required maxLength={25} type="text" name="author" placeholder={authorPlaceholder} value={author ?? ''} onChange={onChangeAuthor} />
+           <input className={styles.input} required maxLength={40} type="text" name="author" placeholder={authorPlaceholder} value={author ?? ''} onChange={onChangeAuthor} />
            <label>Url</label>
-           <input className={styles.input} required maxLength={78} type="url" name="value" placeholder={hrefPlaceholder} value={href ?? ''} onChange={onChangeValue}  />
-           <label>{name ? name : 'No Selection'}</label>
-           <button className={styles.inputButton} onClick={uploadAction}>Select Image</button>
+           <input className={styles.input} required maxLength={160} type="url" name="value" placeholder={hrefPlaceholder} value={href ?? ''} onChange={onChangeValue}  />
+           <label>Tracker Square</label>
+           <input accept={accept} ref={fileRef} required type="file" onChange={onChangeFile} />
         </fieldset>
         <section className={styles.output} aria-labelledby={stickerHeading}>
-           <h2 id={stickerHeading}>Sticker Format 2.4&quot;×3.4&quot;</h2>
+           <h2 id={stickerHeading}>Sticker Format 2.4&quot;×3.9&quot;</h2>
            <fieldset className={styles.buttons}>
               <div>
-                 <button value="save">Download Sticker</button>
+                 <button value="print">Print Sticker</button>
               </div>
               <div>
-                 <button value="print" onClick={onClickPrint}>Print Sticker</button>
+                 <button value="download" formAction={downloadAction}>Download Sticker</button>
               </div>
            </fieldset>
-           <output>
               <section className={styles.sticker}>
                  {sticker}
                </section>
-            </output>
         </section>
    </form>
 };
