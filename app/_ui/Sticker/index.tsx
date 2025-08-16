@@ -78,8 +78,8 @@ const Sticker = ({ image = noImage.src, title, author, href, qr }: Props) => {
         <header style={{ paddingBottom: '0.05in' }}>
            <hgroup style={{ wordBreak: 'break-all' }}>
                <h1 style={{all: 'unset', display: 'inline', fontStyle: 'italic'}}>{title}</h1>
-               <p style={{all: 'unset', display: 'inline'}}>{author}</p>
-               <p style={{all: 'unset', display: 'block', clear: 'both'}}>{href}</p>
+               <p style={{all: 'unset', display: 'inline'}}>&nbsp;{author}</p>
+               <p style={{all: 'unset', display: 'block'}}>{href}</p>
            </hgroup>
         </header>
         <QrCode qr={qr} width={211} image={image} />
