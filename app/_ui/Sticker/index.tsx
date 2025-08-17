@@ -37,7 +37,7 @@ const isPositionMarker = (count: number, ii: number, jj: number) => {
 };
 
 // FIXME awfully ugly
-const split = (text: string, cols: number | undefined = 21) => {
+const textWrap = (text: string, cols: number | undefined = 21) => {
     // FIXME columns is a bad way of doing text wrapping
     text = text.trim();
     const lines = [];
@@ -45,7 +45,7 @@ const split = (text: string, cols: number | undefined = 21) => {
         lines.push(text.substring(0, cols).trim());
         text = text.substring(cols).trim();
     }
-    return lines;
+    return lines.join('\n');
 };
 
 interface QrProps {
@@ -57,9 +57,9 @@ interface QrProps {
 }
 
 const QrCode = ({ qr, title, author, href, image }: QrProps) => {
-    const titleLines = useMemo(() => split(title), [title]);
-    const authorLines = useMemo(() => split(author), [author]);
-    const hrefLines = useMemo(() => split(href), [href]);
+    const titleLines = useMemo(() => textWrap(title), [title]).split('\n');
+    const authorLines = useMemo(() => textWrap(author), [author]).split('\n');
+    const hrefLines = useMemo(() => textWrap(href, 29), [href]).split('\n');
 
     const lineHeight = 23;
     const offset = lineHeight * (titleLines.length + authorLines.length + hrefLines.length + 0.5);
@@ -117,7 +117,7 @@ const QrCode = ({ qr, title, author, href, image }: QrProps) => {
         }
         {
             hrefLines.map((line, ix) =>
-                <tspan key={ix} x={0} dy={lineHeight}>{line}</tspan>
+                <tspan fontFamily="monospace" key={ix} x={0} dy={lineHeight}>{line}</tspan>
                 )
         }
         </text>
