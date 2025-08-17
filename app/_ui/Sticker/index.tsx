@@ -60,9 +60,25 @@ const QrCode = ({ qr, width, image }: QrCodeProps) => {
                 })
             )
         }
-        <image href={image} width={3} height={3} x={2} y={2} />
-        <image href={image} width={3} height={3} x={count - 5} y={2} />
-        <image href={image} width={3} height={3} x={2} y={count - 5} />
+        <filter id="monochrome">
+            <feColorMatrix
+                in="SourceGraphic"
+                type="matrix"
+                values="0.099 0.195 0.038 0 0
+                        0.099 0.195 0.038 0 0
+                        0.099 0.195 0.038 0 0
+                        0     0     0     1 0" />
+            <feComponentTransfer>
+                <feFuncR type="discrete" tableValues="0 1" />
+                <feFuncG type="discrete" tableValues="0 1" />
+                <feFuncB type="discrete" tableValues="0 1" />
+            </feComponentTransfer>
+        </filter>
+        <g filter="url(#monochrome)">
+            <image x={2} y={2} href={image} width={3} height={3} />
+            <image x={count - 5} y={2} href={image} width={3} height={3} />
+            <image x={2} y={count - 5} href={image} width={3} height={3} />
+        </g>
     </svg>;
 };
 
