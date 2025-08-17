@@ -28,13 +28,13 @@ body {
 }
 @page {
    size: 2.4in ${heightStr}in;
-   margin: 0.1in;
+   margin: 0.12in;
 }
 @media screen {
    main {
       width: 2.4in;
       height: ${heightStr}in;
-      padding: 0.1in;
+      padding: 0.12in;
   }
 }
 @media screen {

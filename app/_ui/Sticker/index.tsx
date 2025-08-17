@@ -1,6 +1,9 @@
 "use client";
 
 import noImage from "./no-image.svg";
+import { useRef, useEffect, useLayoutEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import svgUri  from "@/lib/svgUri";
 
 // FIXME... just have a 2d array thing
 interface QrCodeIface {
@@ -35,18 +38,43 @@ const isPositionMarker = (count: number, ii: number, jj: number) => {
     return false;
 };
 
+interface TSpansProps {
+    text: string;
+    split: number;
+}
+
+const TSpans = ({ text, split }: TSpansProps) => {
+    const nodes = [];
+    for (let ii = 0;; ii += 1) {
+        nodes.push(<tspan key={ii} x={0} dy={2}>{text.substring(0, split)}</tspan>);
+        if (text.length <= split) {
+            break;
+        }
+        text = text.substring(split);
+    }
+    return <>{nodes}</>;
+};
 
 interface QrCodeProps {
     qr: QrCodeIface;
     width: number;
+    title: string;
+    author: string;
+    href: string;
     image: string;
 }
 
-const QrCode = ({ qr, width, image }: QrCodeProps) => {
+
+const QrCode = ({ qr, width, title, author, href, image }: QrCodeProps) => {
     const count = qr.getModuleCount();
 
+    const offset = 2 * 4;
+    const heightCounts = count + offset;
+    const height = width * (heightCounts / count);
     return <svg version="1.1" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet"
-    width={`${width}px`} height={`${width}px`} viewBox={`0 0 ${count} ${count}`} >
+    width={`${width}px`} height={`${height}px`} viewBox={`0 0 ${count} ${heightCounts}`} >
+        <text fontSize={2}><TSpans text={title + ' - ' + author + ' ' + href} split={count - 2} /></text>
+        <g transform={`translate(0,${offset})`}>
         {
             iter(count, ii =>
                 iter(count, jj => {
@@ -79,6 +107,7 @@ const QrCode = ({ qr, width, image }: QrCodeProps) => {
             <image x={count - 5} y={2} href={image} width={3} height={3} />
             <image x={2} y={count - 5} href={image} width={3} height={3} />
         </g>
+        </g>
     </svg>;
 };
 
@@ -90,17 +119,7 @@ interface Props {
     qr: QrCodeIface;
 }
 
-const Sticker = ({ image = noImage.src, title, author, href, qr }: Props) => {
-    return <>
-        <header style={{ paddingBottom: '0.05in' }}>
-           <hgroup style={{ wordBreak: 'break-all' }}>
-               <h3 style={{all: 'unset', display: 'inline', fontStyle: 'italic'}}>{title}</h3>
-               <p style={{all: 'unset', display: 'inline'}}>&nbsp;{author}</p>
-               <p style={{all: 'unset', display: 'block'}}>{href}</p>
-           </hgroup>
-        </header>
-        <QrCode qr={qr} width={211} image={image} />
-        </>;
-};
+const Sticker = ({ image = noImage.src, title, author, href, qr }: Props) =>
+    <QrCode qr={qr} width={211} image={image} title={title} author={author} href={href} />;
 
 export default Sticker;
