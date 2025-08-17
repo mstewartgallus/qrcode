@@ -73,7 +73,7 @@ const Output = ({ title, author, href, image }: OutputProps) => {
 
     return <>
         <section className={styles.output} aria-labelledby={stickerHeading}>
-           <h2 id={stickerHeading}>Sticker Format 2.4&quot;×{(height ?? 3.19).toFixed(2)}&quot;</h2>
+           <h2 id={stickerHeading}>B/W Sticker 2.4&quot;×{(height ?? 3.19).toFixed(2)}&quot;</h2>
                <div className={styles.sticker} ref={stickerRef}>
                    <SvgDownload download="sticker.svg">
                        <Sticker qr={qr} image={image}
