@@ -10,10 +10,17 @@
     margin-inline-start: 1em;
 }
 
-.sticker {
+.sticker, .page {
     outline-style: solid;
+}
+
+.sticker {
     width: 2.4in;
     padding: 0.12in;
+}
+.page {
+    width: 8.27in;
+    height: 11.69in;
 }
 
 .inputs {

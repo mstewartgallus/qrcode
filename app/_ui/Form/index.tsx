@@ -1,7 +1,7 @@
 "use client";
 
 import type { ChangeEvent } from "react";
-import type { StickerHandle } from "../Sticker";
+import SvgDownload from "../SvgDownload";
 import Sticker from "../Sticker";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useId, useRef, useState } from "react";
 import svgUri from "@/lib/svgUri";
@@ -12,6 +12,7 @@ import qrcode from "qrcode-generator";
 import styles from "./Form.module.css";
 
 const getDefaultPositionMarker = cache(async () => {
+    // FIXME... read as data url
     const response = await fetch(noImage.src);
     const blob = await response.blob();
     const buffer = await blob.arrayBuffer();
@@ -23,20 +24,6 @@ const getDefaultPositionMarker = cache(async () => {
 const hrefPlaceholder = "https://www.gutenberg.org/ebooks/132";
 const titlePlaceholder = "The Art of War";
 const authorPlaceholder = "Sun Tzu";
-
-const download = (blob: Blob, download?: string) => {
-    const href = URL.createObjectURL(blob);
-    try {
-        const anchor = document.createElement('a');
-        anchor.href = href;
-        if (download) {
-            anchor.download = download;
-        }
-        anchor.click();
-    } finally {
-        URL.revokeObjectURL(href);
-    }
-};
 
 const usePositionMarker = () => {
     const [marker, setMarker] = useState<string | null>(null);
@@ -53,12 +40,14 @@ const usePositionMarker = () => {
     return marker;
 };
 
-const Form = () => {
-    const [title, setTitle] = useState<string>('');
-    const [author, setAuthor] = useState<string>('');
-    const [href, setHref] = useState<string>('');
-    const [image, setImage] = useState<string | null>(null);
+interface OutputProps {
+    title: string;
+    author: string;
+    href: string;
+    image?: string;
+}
 
+const Output = ({ title, author, href, image }: OutputProps) => {
     const url = useMemo(() => {
         // FIXME.. validate URL
         const url = URL.canParse(href) ? new URL(href) : new URL(hrefPlaceholder);
@@ -72,17 +61,36 @@ const Form = () => {
         return qr;
     }, [url]);
 
-    // FIXME... track height for downloading/printing
-    const stickerHandleRef = useRef<StickerHandle>(null);
-
-
-    const stickerRef = useRef<HTMLElement>(null);
+    const stickerRef = useRef<HTMLDivElement>(null);
     const [height, setHeight] = useState<number | null>(null);
     useLayoutEffect(() => {
         // FIXME... this is ick
         const height = stickerRef.current!.offsetHeight / 96;
         setHeight(height);
     }, [url, title, author, href]);
+
+    const stickerHeading = useId();
+
+    return <>
+        <section className={styles.output} aria-labelledby={stickerHeading}>
+           <h2 id={stickerHeading}>Sticker Format 2.4&quot;×{(height ?? 3.19).toFixed(2)}&quot;</h2>
+               <div className={styles.sticker} ref={stickerRef}>
+                   <SvgDownload download="sticker.svg">
+                       <Sticker qr={qr} image={image}
+                             title={title}
+                             author={author}
+                             href={url} />
+                   </SvgDownload>
+              </div>
+        </section>
+        </>;
+};
+
+const Form = () => {
+    const [title, setTitle] = useState<string>('');
+    const [author, setAuthor] = useState<string>('');
+    const [href, setHref] = useState<string>('');
+    const [image, setImage] = useState<string | null>(null);
 
     const onChangeTitle = useCallback((event: ChangeEvent<HTMLInputElement>) => {
         event.preventDefault();
@@ -117,15 +125,13 @@ const Form = () => {
         setImage(data);
     }, []);
 
-    const downloadAction = useCallback(async () => {
-        download(new Blob([stickerHandleRef.current!.svg()]), 'sticker.svg');
+    const noAction = useCallback(async () => {
+        // FIXME... this is ugly
     }, []);
-
-    const stickerHeading = useId();
 
     const defaultMarker = usePositionMarker();
 
-    return <form action={downloadAction}>
+    return <form action={noAction}>
         <fieldset className={styles.inputs}>
            <label>Title</label>
            <input className={styles.input} required type="text" maxLength={80} name="title" placeholder={titlePlaceholder} value={title ?? ''} onChange={onChangeTitle} />
@@ -139,20 +145,12 @@ const Form = () => {
            <label>Position Marker</label>
            <input accept="image/*" ref={fileRef} required type="file" onChange={onChangeFile} />
         </fieldset>
-        <section className={styles.output} aria-labelledby={stickerHeading}>
-           <h2 id={stickerHeading}>Sticker Format 2.4&quot;×{(height ?? 3.19).toFixed(2)}&quot;</h2>
-           <fieldset className={styles.buttons}>
-              <div>
-                 <button value="download">Download sticker.svg</button>
-              </div>
-           </fieldset>
-               <section className={styles.sticker} ref={stickerRef}>
-                   <Sticker ref={stickerHandleRef} qr={qr} image={image ?? defaultMarker}
-                       title={title === '' ? titlePlaceholder : title}
-                       author={author === '' ? authorPlaceholder : author}
-                       href={url} />
-              </section>
-        </section>
+        <Output
+           title={title !== '' ? title : titlePlaceholder}
+           author={author !== '' ? author : authorPlaceholder}
+           href={href !== '' ? href : hrefPlaceholder}
+           image={image ?? defaultMarker ?? undefined}
+        />
    </form>
 };
 

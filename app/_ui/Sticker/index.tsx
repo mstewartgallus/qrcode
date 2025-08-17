@@ -1,7 +1,6 @@
 "use client";
 
-import type { Ref } from "react";
-import { useImperativeHandle, useMemo, useRef } from "react";
+import { useMemo } from "react";
 
 // FIXME... just have a 2d array thing
 interface QrCodeIface {
@@ -125,31 +124,15 @@ const QrCode = ({ qr, title, author, href, image }: QrProps) => {
     </svg>;
 };
 
-export interface StickerHandle {
-    svg(): string;
-}
-
 interface Props {
-    ref?: Ref<StickerHandle>;
-    image: string;
+    image?: string;
     title: string;
     author: string;
     href: string;
     qr: QrCodeIface;
 }
 
-const Sticker = ({ ref: stickerRef, qr, title, author, href, image }: Props) => {
-    const ref = useRef<HTMLDivElement>(null);
-
-    useImperativeHandle(stickerRef, () => ({
-        svg() {
-            return (ref.current!.lastChild as HTMLElement).outerHTML;
-        }
-    }), []);
-
-    return <div ref={ref}>
-        <QrCode qr={qr} title={title} author={author} href={href} image={image} />
-        </div>;
-}
+const Sticker = ({ qr, title, author, href, image }: Props) =>
+    <QrCode qr={qr} title={title} author={author} href={href} image={image} />;
 
 export default Sticker;
