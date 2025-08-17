@@ -1,3 +1,7 @@
+.text {
+    resize: none;
+}
+
 .input {
     min-inline-size: 30em;
 }
@@ -8,9 +12,8 @@
 
 .sticker {
     outline-style: solid;
-    overflow: hidden;
     width: 2.4in;
-    padding: 0.1in;
+    padding: 0.12in;
 }
 
 .inputs {

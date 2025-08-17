@@ -1,137 +1,62 @@
 "use client";
 
-import type { ReactNode, ChangeEvent } from "react";
+import type { ChangeEvent } from "react";
+import type { StickerHandle } from "../Sticker";
 import Sticker from "../Sticker";
-import { useCallback, useLayoutEffect, useMemo, useId, useRef, useState } from "react";
-import { createRoot } from "react-dom/client";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useId, useRef, useState } from "react";
+import svgUri from "@/lib/svgUri";
+import noImage from "./no-image.svg";
+import { cache } from "react";
 import qrcode from "qrcode-generator";
 
 import styles from "./Form.module.css";
 
+const getDefaultPositionMarker = cache(async () => {
+    const response = await fetch(noImage.src);
+    const blob = await response.blob();
+    const buffer = await blob.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    const binaryString = String.fromCharCode(...bytes);
+    return svgUri(binaryString);
+});
+
+const hrefPlaceholder = "https://www.gutenberg.org/ebooks/132";
 const titlePlaceholder = "The Art of War";
 const authorPlaceholder = "Sun Tzu";
-const hrefPlaceholder = "https://www.gutenberg.org/ebooks/132";
 
-const stickerStyle = (height: number) => {
-    const heightStr = height.toFixed(2);
-    return `
-html,
-body {
-    display: block;
-    padding: 0;
-    margin: 0;
-    font-family: system-ui, sans-serif;
-}
-
-* {
-    box-sizing: border-box;
-}
-@page {
-   size: 2.4in ${heightStr}in;
-   margin: 0.12in;
-}
-@media screen {
-   main {
-      width: 2.4in;
-      height: ${heightStr}in;
-      padding: 0.12in;
-  }
-}
-@media screen {
-   main {
-      overflow: hidden;
-   }
-   body {
-      background-color: grey;
-   }
-   main {
-      background-color: Canvas;
-   }
-}
-body {
-   display: flex;
-   justify-content: center;
-   align-items: center;
-}
-`;
-};
-
-const schedule = async (timeout: number = 500) => {
-    // FIXME... ugly hack
-    await new Promise<void>(res => setTimeout(() => res(), timeout));
-};
-
-const renderDoc = async (children: ReactNode) => {
-    const iframe = document.createElement('iframe');
-    iframe.style.visibility = "hidden";
-
-    const body = document.body;
-    body.appendChild(iframe);
-
-    await schedule();
-
-    const doc = iframe.contentDocument!;
-    try {
-        const root = createRoot(doc.documentElement);
-        try {
-            root.render(children);
-
-            await schedule();
-
-            return doc.documentElement.outerHTML;
-        } finally {
-            root.unmount();
-        }
-    } finally {
-        body.removeChild(iframe);
-    }
-};
-
-const print = async (children: ReactNode) => {
-    const iframe = document.createElement('iframe');
-    // work on Chrome
-    iframe.style.visibility = "hidden";
-    const body = document.body;
-    body.appendChild(iframe);
-
-    await schedule();
-
-    const doc = iframe.contentDocument!;
-    try {
-        const root = createRoot(doc.documentElement);
-        try {
-            root.render(children);
-
-            await schedule();
-
-            iframe.contentWindow?.print();
-        } finally {
-            root.unmount();
-        }
-    } finally {
-        body.removeChild(iframe);
-    }
-};
-
-// FIXME... use data uri?
-const download = (name: string, content: string) => {
-    const url = URL.createObjectURL(new Blob([content]));
+const download = (blob: Blob, download?: string) => {
+    const href = URL.createObjectURL(blob);
     try {
         const anchor = document.createElement('a');
-        anchor.href = url;
-        anchor.download = name;
+        anchor.href = href;
+        if (download) {
+            anchor.download = download;
+        }
         anchor.click();
     } finally {
-        URL.revokeObjectURL(url);
+        URL.revokeObjectURL(href);
     }
 };
 
-const accept = `image/*`;
+const usePositionMarker = () => {
+    const [marker, setMarker] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (marker) {
+            return;
+        }
+        (async () => {
+            const marker = await getDefaultPositionMarker();
+            setMarker(marker);
+        })();
+    }, [marker]);
+    return marker;
+};
 
 const Form = () => {
-    const [title, setTitle] = useState<string | null>(null);
-    const [author, setAuthor] = useState<string | null>(null);
-    const [href, setHref] = useState<string | null>(null);
+    const [title, setTitle] = useState<string>('');
+    const [author, setAuthor] = useState<string>('');
+    const [href, setHref] = useState<string>('');
     const [image, setImage] = useState<string | null>(null);
 
     const url = useMemo(() => {
@@ -148,15 +73,7 @@ const Form = () => {
     }, [url]);
 
     // FIXME... track height for downloading/printing
-
-    const sticker = useMemo(() => {
-        return <Sticker
-        qr={qr}
-        image={image ?? undefined}
-        title={title ?? titlePlaceholder}
-        author={author ?? authorPlaceholder}
-        href={url} />;
-    }, [image, title, author, url, qr]);
+    const stickerHandleRef = useRef<StickerHandle>(null);
 
 
     const stickerRef = useRef<HTMLElement>(null);
@@ -166,19 +83,6 @@ const Form = () => {
         const height = stickerRef.current!.offsetHeight / 96;
         setHeight(height);
     }, [url, title, author, href]);
-
-    const stickerDoc = useMemo(() => {
-        return <>
-           <head>
-            <style>{stickerStyle(height ?? 3.19)}</style>
-           </head>
-            <body>
-              <main>
-                {sticker}
-              </main>
-           </body>
-            </>;
-    }, [sticker, height]);
 
     const onChangeTitle = useCallback((event: ChangeEvent<HTMLInputElement>) => {
         event.preventDefault();
@@ -192,14 +96,6 @@ const Form = () => {
         event.preventDefault();
         setHref(event.target.value);
     }, []);
-
-    const downloadAction = useCallback(async () => {
-        download('agitprop.html', await renderDoc(stickerDoc));
-    }, [stickerDoc]);
-
-    const printAction = useCallback(() => {
-        print(stickerDoc);
-    }, [stickerDoc]);
 
     const fileRef = useRef<HTMLInputElement>(null);
 
@@ -221,32 +117,41 @@ const Form = () => {
         setImage(data);
     }, []);
 
+    const downloadAction = useCallback(async () => {
+        download(new Blob([stickerHandleRef.current!.svg()]), 'sticker.svg');
+    }, []);
+
     const stickerHeading = useId();
 
-    return <form action={printAction}>
+    const defaultMarker = usePositionMarker();
+
+    return <form action={downloadAction}>
         <fieldset className={styles.inputs}>
            <label>Title</label>
-           <input className={styles.input} required maxLength={80} type="text" name="title" placeholder={titlePlaceholder} value={title ?? ''} onChange={onChangeTitle} />
+           <input className={styles.input} required type="text" maxLength={80} name="title" placeholder={titlePlaceholder} value={title ?? ''} onChange={onChangeTitle} />
+
            <label>Author</label>
-           <input className={styles.input} required maxLength={40} type="text" name="author" placeholder={authorPlaceholder} value={author ?? ''} onChange={onChangeAuthor} />
+           <input className={styles.input} required type="text" maxLength={80} name="author" placeholder={authorPlaceholder} value={author ?? ''} onChange={onChangeAuthor} />
+
            <label>Url</label>
            <input className={styles.input} required maxLength={160} type="url" name="value" placeholder={hrefPlaceholder} value={href ?? ''} onChange={onChangeValue}  />
+
            <label>Position Marker</label>
-           <input accept={accept} ref={fileRef} required type="file" onChange={onChangeFile} />
+           <input accept="image/*" ref={fileRef} required type="file" onChange={onChangeFile} />
         </fieldset>
         <section className={styles.output} aria-labelledby={stickerHeading}>
            <h2 id={stickerHeading}>Sticker Format 2.4&quot;×{(height ?? 3.19).toFixed(2)}&quot;</h2>
            <fieldset className={styles.buttons}>
               <div>
-                 <button value="print">Print Sticker</button>
-              </div>
-              <div>
-                 <button value="download" formAction={downloadAction}>Download Sticker</button>
+                 <button value="download">Download sticker.svg</button>
               </div>
            </fieldset>
                <section className={styles.sticker} ref={stickerRef}>
-                 {sticker}
-               </section>
+                   <Sticker ref={stickerHandleRef} qr={qr} image={image ?? defaultMarker}
+                       title={title === '' ? titlePlaceholder : title}
+                       author={author === '' ? authorPlaceholder : author}
+                       href={url} />
+              </section>
         </section>
    </form>
 };
