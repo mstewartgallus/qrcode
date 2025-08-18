@@ -40,6 +40,9 @@ interface Props {
 
 const QrCode = ({ qr, positionMarker }: Props) => {
     const count = qr.getModuleCount();
+
+    const clipId = useId();
+
     const positionId = useId();
     const positionHref = `#${positionId}`;
     return <g>
@@ -58,9 +61,17 @@ const QrCode = ({ qr, positionMarker }: Props) => {
                   )
               }
         </g>
+            <filter id={clipId}>
+               <feComponentTransfer>
+                   <feFuncA type="table" tableValues="0 1" />
+                   <feFuncR type="table" tableValues="0.3" />
+                   <feFuncG type="table" tableValues="0.3" />
+                   <feFuncB type="table" tableValues="0.3" />
+               </feComponentTransfer>
+            </filter>
            <symbol id={positionId} width={3} height={3} viewBox="0 0 8 8">
               <rect fill="black" width={8} height={8} />
-              <image x={1} y={1} href={positionMarker} width={6} height={6} />
+              <image x={2} y={2} href={positionMarker} width={4} height={4} filter={`url(#${clipId})`}/>
            </symbol>
            <g>
                <use href={positionHref} x={2} y={2} />
