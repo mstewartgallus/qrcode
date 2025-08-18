@@ -35,14 +35,14 @@ const A4 = ({ qr, title, author, href, image, monochrome = false }: Props) => {
           </g>
         </symbol>
         <g filter={monochrome ? `url(#${monochromeId})` : undefined}>
-           <text y={100}>
-              <tspan x={10} fontSize={60} fontStyle="italic">{title}</tspan>
-              <tspan x={10} fontSize={30} dy={30}>{author}</tspan>
-              <tspan x={10} fontSize={20} dy={30} fontFamily="monospace">{href}</tspan>
+           <text y={110}>
+              <tspan x={50} fontSize={60} fontStyle="italic">{title}</tspan>
+              <tspan x={50} fontSize={30} dy={50}>{author}</tspan>
+              <tspan x={50} fontSize={20} dy={30} fontFamily="monospace">{href}</tspan>
            </text>
-           <g transform="translate(30, 190)">
-             <image x={130} y={0} href={image} width={600} height={600} />
-             <use href={`#${qrcodeId}`} x={0} y={370} width={500} height={500} />
+           <g transform="translate(70, 280)">
+             <image x={170} y={0} href={image} width={500} height={500} />
+             <use href={`#${qrcodeId}`} x={0} y={370} width={420} height={420} />
            </g>
         </g>
     </svg>;

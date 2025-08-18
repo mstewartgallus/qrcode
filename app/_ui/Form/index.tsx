@@ -49,6 +49,9 @@ interface OutputProps {
 }
 
 const Output = ({ title, author, href, image }: OutputProps) => {
+    title = title.trim();
+    author = author.trim();
+
     const url = useMemo(() => {
         // FIXME.. validate URL
         const url = URL.canParse(href) ? new URL(href) : new URL(hrefPlaceholder);

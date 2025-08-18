@@ -9,6 +9,8 @@ interface QrCodeIface {
   isDark(row: number, col: number): boolean;
 }
 
+// FIXME use SVGElements's getComputedTextLength to implement word
+// wrapping
 // FIXME awfully ugly
 const textWrap = (text: string, cols: number | undefined = 21) => {
     // FIXME columns is a bad way of doing text wrapping
