@@ -1,3 +1,4 @@
+import { useId } from "react";
 
 // FIXME... just have a 2d array thing
 interface QrCodeIface {
@@ -39,6 +40,8 @@ interface Props {
 
 const QrCode = ({ qr, positionMarker }: Props) => {
     const count = qr.getModuleCount();
+    const positionId = useId();
+    const positionHref = `#${positionId}`;
     return <g>
            <g>
               {
@@ -54,11 +57,15 @@ const QrCode = ({ qr, positionMarker }: Props) => {
                       })
                   )
               }
-           </g>
+        </g>
+           <symbol id={positionId} width={3} height={3} viewBox="0 0 8 8">
+              <rect fill="black" width={8} height={8} />
+              <image x={1} y={1} href={positionMarker} width={6} height={6} />
+           </symbol>
            <g>
-               <image x={2} y={2} href={positionMarker} width={3} height={3} />
-               <image x={count - 5} y={2} href={positionMarker} width={3} height={3} />
-               <image x={2} y={count - 5} href={positionMarker} width={3} height={3} />
+               <use href={positionHref} x={2} y={2} />
+               <use href={positionHref} x={count - 5} y={2} />
+               <use href={positionHref} x={2} y={count - 5} />
            </g>
         </g>;
 };
