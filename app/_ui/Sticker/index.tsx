@@ -1,7 +1,6 @@
 "use client";
 
 import { useId, useMemo } from "react";
-import FilterMonochrome from "../FilterMonochrome";
 import QrCode from "../QrCode";
 
 // FIXME... just have a 2d array thing
@@ -27,11 +26,10 @@ interface Props {
     title: string;
     author: string;
     href: string;
-    monochrome?: boolean;
     qr: QrCodeIface;
 }
 
-const Sticker = ({ qr, title, author, href, image, monochrome = false }: Props) => {
+const Sticker = ({ qr, title, author, href, image }: Props) => {
     const titleLines = useMemo(() => textWrap(title), [title]).split('\n');
     const authorLines = useMemo(() => textWrap(author), [author]).split('\n');
     const hrefLines = useMemo(() => textWrap(href, 29), [href]).split('\n');
@@ -46,13 +44,10 @@ const Sticker = ({ qr, title, author, href, image, monochrome = false }: Props) 
     const count = qr.getModuleCount();
     return <svg version="1.1" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet"
         width="211px" height={`${height}px`} viewBox={`0 0 211 ${height}`}>
-        <filter id={monochromeId}>
-            <FilterMonochrome />
-        </filter>
         <symbol id={qrcodeId} viewBox={`0 0 ${count} ${count}`}>
            <QrCode qr={qr} positionMarker={image} />
         </symbol>
-        <g filter={monochrome ? `url(#${monochromeId})` : undefined}>
+        <g>
            <text x={0} y={0}>
            {
                titleLines.map((line, ix) =>

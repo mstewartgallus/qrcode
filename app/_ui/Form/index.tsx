@@ -85,17 +85,6 @@ const Output = ({ title, author, href, image }: OutputProps) => {
                    </SvgDownload>
               </div>
         </section>
-        <section className={styles.output} aria-labelledby={stickerHeading}>
-           <h2 id={stickerHeading}>B/W Sticker 2.4&quot;×{(height ?? 3.19).toFixed(2)}&quot;</h2>
-               <div className={styles.sticker}>
-                   <SvgDownload download="sticker-monochrome.svg">
-                       <Sticker qr={qr} image={image}
-                             title={title}
-                             author={author}
-                             href={url} monochrome={true}/>
-                   </SvgDownload>
-              </div>
-        </section>
         <section className={styles.output} aria-labelledby={a4Heading}>
            <h2 id={a4Heading}>A4</h2>
                <div className={styles.a4}>
