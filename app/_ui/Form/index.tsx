@@ -4,7 +4,7 @@ import type { ChangeEvent } from "react";
 import SvgDownload from "../SvgDownload";
 import Sticker from "../Sticker";
 import A4 from "../A4";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useId, useRef, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useId, useRef, useState, useTransition } from "react";
 import svgUri from "@/lib/svgUri";
 import noImage from "./no-image.svg";
 import { cache } from "react";
@@ -28,6 +28,7 @@ const authorPlaceholder = "Sun Tzu";
 
 const usePositionMarker = () => {
     const [marker, setMarker] = useState<string | null>(null);
+    const [, startTransition] = useTransition();
 
     useEffect(() => {
         if (marker) {
@@ -35,10 +36,48 @@ const usePositionMarker = () => {
         }
         (async () => {
             const marker = await getDefaultPositionMarker();
-            setMarker(marker);
+            startTransition(() => setMarker(marker));
         })();
     }, [marker]);
     return marker;
+};
+
+// FIXME... just have a 2d array thing
+interface QrCodeIface {
+  getModuleCount(): number;
+  isDark(row: number, col: number): boolean;
+}
+
+interface OutputStickerProps {
+    qr: QrCodeIface;
+    title: string;
+    author: string;
+    url: string;
+    image?: string;
+}
+
+const OutputSticker = ({ qr, title, author, url, image }: OutputStickerProps) => {
+    const stickerHeading = useId();
+    const stickerRef = useRef<HTMLDivElement>(null);
+    const [height, setHeight] = useState<number | null>(null);
+    const [, startTransition] = useTransition();
+    useLayoutEffect(() => {
+        // FIXME... this is ick
+        const height = stickerRef.current!.offsetHeight / 96;
+        startTransition(() => setHeight(height));
+    }, [url, title, author, url]);
+
+    return <section className={styles.output} aria-labelledby={stickerHeading}>
+            <h2 id={stickerHeading}>Sticker 2.4&quot;×{(height ?? 3.19).toFixed(2)}&quot;</h2>
+                <div className={styles.sticker} ref={stickerRef}>
+                   <SvgDownload download="sticker.svg">
+                       <Sticker qr={qr} image={image}
+                             title={title}
+                             author={author}
+                             href={url} />
+                   </SvgDownload>
+                </div>
+        </section>;
 };
 
 interface OutputProps {
@@ -49,8 +88,10 @@ interface OutputProps {
 }
 
 const Output = ({ title, author, href, image }: OutputProps) => {
-    title = title.trim();
-    author = author.trim();
+    title = useDeferredValue(title).trim();
+    author = useDeferredValue(author).trim();
+    href = useDeferredValue(href);
+    image = useDeferredValue(image);
 
     const url = useMemo(() => {
         // FIXME.. validate URL
@@ -65,29 +106,10 @@ const Output = ({ title, author, href, image }: OutputProps) => {
         return qr;
     }, [url]);
 
-    const stickerRef = useRef<HTMLDivElement>(null);
-    const [height, setHeight] = useState<number | null>(null);
-    useLayoutEffect(() => {
-        // FIXME... this is ick
-        const height = stickerRef.current!.offsetHeight / 96;
-        setHeight(height);
-    }, [url, title, author, href]);
-
-    const stickerHeading = useId();
     const a4Heading = useId();
 
     return <>
-        <section className={styles.output} aria-labelledby={stickerHeading}>
-           <h2 id={stickerHeading}>Sticker 2.4&quot;×{(height ?? 3.19).toFixed(2)}&quot;</h2>
-               <div className={styles.sticker} ref={stickerRef}>
-                   <SvgDownload download="sticker.svg">
-                       <Sticker qr={qr} image={image}
-                             title={title}
-                             author={author}
-                             href={url} />
-                   </SvgDownload>
-              </div>
-        </section>
+        <OutputSticker qr={qr} title={title} author={author} image={image} url={url} />
         <section className={styles.output} aria-labelledby={a4Heading}>
            <h2 id={a4Heading}>A4</h2>
                <div className={styles.a4}>

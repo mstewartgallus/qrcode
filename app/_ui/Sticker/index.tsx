@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo } from "react";
+import { useCallback, useEffect, useState, useId } from "react";
 import QrCode from "../QrCode";
 
 // FIXME... just have a 2d array thing
@@ -9,18 +9,50 @@ interface QrCodeIface {
   isDark(row: number, col: number): boolean;
 }
 
+interface TipProps {
+    lines: number;
+    formatAction?: (lines: number) => Promise<void>;
+}
+
+const Tip = ({ formatAction, lines }: TipProps) => {
+    useEffect(() => {
+        formatAction?.(lines);
+    }, [formatAction, lines]);
+    return undefined;
+};
+
+interface LineProps {
+    children: string;
+    dy: number;
+}
+const Line = ({ children, dy }: LineProps) => {
+    return <tspan x={0} dy={dy}>{children.trim()}</tspan>;
+};
+
+interface TextProps {
+    children: string;
+    cols?: number;
+    dy: number;
+    formatAction?: (lines: number) => Promise<void>;
+}
+
 // FIXME use SVGElements's getComputedTextLength to implement word
-// wrapping
-// FIXME awfully ugly
-const textWrap = (text: string, cols: number | undefined = 21) => {
-    // FIXME columns is a bad way of doing text wrapping
-    text = text.trim();
-    const lines = [];
-    while (text.length > 0) {
-        lines.push(text.substring(0, cols).trim());
-        text = text.substring(cols).trim();
-    }
-    return lines.join('\n');
+// wrapping instead of columns
+const Text = ({ children, cols = 21, dy, formatAction }: TextProps) => {
+    const text = children.trim();
+
+    return [...(function *() {
+        let slice = text;
+        let lines = 0;
+        while (slice.length > 0) {
+            const line = slice.substring(0, cols);
+            yield <Line key={lines} dy={dy}>{line}</Line>;
+            slice = slice.substring(cols).trim();
+            lines += 1;
+        }
+
+        yield <Tip key="tip" lines={lines} formatAction={formatAction} />;
+    })()];
 };
 
 interface Props {
@@ -32,16 +64,25 @@ interface Props {
 }
 
 const Sticker = ({ qr, title, author, href, image }: Props) => {
-    const titleLines = useMemo(() => textWrap(title), [title]).split('\n');
-    const authorLines = useMemo(() => textWrap(author), [author]).split('\n');
-    const hrefLines = useMemo(() => textWrap(href, 29), [href]).split('\n');
+    const [titleLines, setTitleLines] = useState(1);
+    const [authorLines, setAuthorLines] = useState(1);
+    const [hrefLines, setHrefLines] = useState(1);
 
     const lineHeight = 23;
-    const offset = lineHeight * (titleLines.length + authorLines.length + hrefLines.length + 0.5);
+    const offset = lineHeight * (titleLines + authorLines + hrefLines + 0.5);
     const height = 211 + offset;
 
-    const monochromeId = useId();
     const qrcodeId = useId();
+
+    const formatTitleAction = useCallback(async (lines: number) => {
+        setTitleLines(lines);
+    }, []);
+    const formatAuthorAction = useCallback(async (lines: number) => {
+        setAuthorLines(lines);
+    }, []);
+    const formatHrefAction = useCallback(async (lines: number) => {
+        setHrefLines(lines);
+    }, []);
 
     const count = qr.getModuleCount();
     return <svg version="1.1" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet"
@@ -51,21 +92,15 @@ const Sticker = ({ qr, title, author, href, image }: Props) => {
         </symbol>
         <g>
            <text x={0} y={0}>
-           {
-               titleLines.map((line, ix) =>
-                   <tspan fontStyle="italic" key={ix} x={0} dy={lineHeight}>{line}</tspan>
-                   )
-           }
-           {
-               authorLines.map((line, ix) =>
-                   <tspan key={ix} x={0} dy={lineHeight}>{line}</tspan>
-                   )
-           }
-           {
-               hrefLines.map((line, ix) =>
-                   <tspan fontFamily="monospace" key={ix} x={0} dy={lineHeight}>{line}</tspan>
-                   )
-           }
+              <tspan fontStyle="italic">
+                 <Text dy={lineHeight} formatAction={formatTitleAction}>{title}</Text>
+              </tspan>
+              <tspan>
+                 <Text dy={lineHeight} formatAction={formatAuthorAction}>{author}</Text>
+              </tspan>
+              <tspan fontFamily="monospace">
+                 <Text dy={lineHeight} formatAction={formatHrefAction} cols={29}>{href}</Text>
+              </tspan>
            </text>
            <use href={`#${qrcodeId}`} x={0} y={offset} width={211} height={211} />
         </g>

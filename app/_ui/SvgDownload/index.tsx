@@ -2,7 +2,22 @@
 
 import type { ReactNode } from "react";
 import svgUri from "@/lib/svgUri";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useTransition, useCallback, useLayoutEffect, useRef, useState } from "react";
+
+interface WrapProps {
+    children: ReactNode;
+    layoutAction?: (svg: string) => Promise<void>;
+}
+
+const Wrap = ({ children, layoutAction }: WrapProps) => {
+    const ref = useRef<HTMLDivElement>(null);
+    // FIXME... seems very ick
+    useLayoutEffect(() => {
+        const svg = (ref.current!.lastChild as HTMLElement).outerHTML;
+        layoutAction?.(svg);
+    });
+    return <div ref={ref}>{children}</div>;
+}
 
 interface Props {
     children: ReactNode;
@@ -10,16 +25,17 @@ interface Props {
 }
 
 const SvgDownload = ({ children, download }: Props) => {
+    const [, startTransition] = useTransition();
     const [src, setSrc] = useState<string | null>(null);
-    const ref = useRef<HTMLAnchorElement>(null);
-    useLayoutEffect(() => {
-        const svg = (ref.current!.lastChild as HTMLElement).outerHTML;
+    const layoutAction = useCallback(async (svg: string) => {
         const newSrc = svgUri(svg);
         if (src !== newSrc) {
-            setSrc(newSrc);
+            startTransition(() => setSrc(newSrc));
         }
-    });
-    return <a ref={ref} href={src ?? undefined} download={download}>{children}</a>;
+    }, [src]);
+    return <a href={src ?? undefined} download={download}>
+           <Wrap layoutAction={layoutAction}>{children}</Wrap>
+        </a>;
 }
 
 export default SvgDownload;
