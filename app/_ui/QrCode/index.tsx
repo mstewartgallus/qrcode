@@ -49,15 +49,19 @@ const QrCode = ({ qr, positionMarker }: Props) => {
            <g>
               {
                   iter(count, ii =>
-                      iter(count, jj => {
-                          if (isPositionMarker(count, ii, jj)) {
-                              return;
-                          }
-                          if (!qr.isDark(ii, jj)) {
-                              return;
-                          }
-                          return <rect key={`${ii}-${jj}`} x={ii} y={jj} width={1} height={1} />;
-                      })
+                      <g key={ii}>
+                      {
+                          iter(count, jj => {
+                              if (isPositionMarker(count, ii, jj)) {
+                                  return;
+                              }
+                              if (!qr.isDark(ii, jj)) {
+                                  return;
+                              }
+                              return <rect key={jj} x={ii} y={jj} width={1} height={1} />;
+                          })
+                      }
+                       </g>
                   )
               }
         </g>
