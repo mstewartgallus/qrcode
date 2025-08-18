@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useId, useMemo } from "react";
+import FilterMonochrome from "../FilterMonochrome";
 import QrCode from "../QrCode";
 
 // FIXME... just have a 2d array thing
@@ -26,10 +27,11 @@ interface Props {
     title: string;
     author: string;
     href: string;
+    monochrome?: boolean;
     qr: QrCodeIface;
 }
 
-const Sticker = ({ qr, title, author, href, image }: Props) => {
+const Sticker = ({ qr, title, author, href, image, monochrome = false }: Props) => {
     const titleLines = useMemo(() => textWrap(title), [title]).split('\n');
     const authorLines = useMemo(() => textWrap(author), [author]).split('\n');
     const hrefLines = useMemo(() => textWrap(href, 29), [href]).split('\n');
@@ -38,30 +40,38 @@ const Sticker = ({ qr, title, author, href, image }: Props) => {
     const offset = lineHeight * (titleLines.length + authorLines.length + hrefLines.length + 0.5);
     const height = 211 + offset;
 
+    const monochromeId = useId();
+    const qrcodeId = useId();
+
     const count = qr.getModuleCount();
     return <svg version="1.1" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet"
         width="211px" height={`${height}px`} viewBox={`0 0 211 ${height}`}>
-        <symbol id="qrcode" viewBox={`0 0 ${count} ${count}`}>
+        <filter id={monochromeId}>
+            <FilterMonochrome />
+        </filter>
+        <symbol id={qrcodeId} viewBox={`0 0 ${count} ${count}`}>
            <QrCode qr={qr} positionMarker={image} />
         </symbol>
-        <text x={0} y={0}>
-        {
-            titleLines.map((line, ix) =>
-                <tspan fontStyle="italic" key={ix} x={0} dy={lineHeight}>{line}</tspan>
-                )
-        }
-        {
-            authorLines.map((line, ix) =>
-                <tspan key={ix} x={0} dy={lineHeight}>{line}</tspan>
-                )
-        }
-        {
-            hrefLines.map((line, ix) =>
-                <tspan fontFamily="monospace" key={ix} x={0} dy={lineHeight}>{line}</tspan>
-                )
-        }
-        </text>
-        <use href="#qrcode" x={0} y={offset} width={211} height={211} />
+        <g filter={monochrome ? `url(#${monochromeId})` : undefined}>
+           <text x={0} y={0}>
+           {
+               titleLines.map((line, ix) =>
+                   <tspan fontStyle="italic" key={ix} x={0} dy={lineHeight}>{line}</tspan>
+                   )
+           }
+           {
+               authorLines.map((line, ix) =>
+                   <tspan key={ix} x={0} dy={lineHeight}>{line}</tspan>
+                   )
+           }
+           {
+               hrefLines.map((line, ix) =>
+                   <tspan fontFamily="monospace" key={ix} x={0} dy={lineHeight}>{line}</tspan>
+                   )
+           }
+           </text>
+           <use href={`#${qrcodeId}`} x={0} y={offset} width={211} height={211} />
+        </g>
     </svg>;
 };
 

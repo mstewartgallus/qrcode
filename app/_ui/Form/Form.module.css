@@ -10,7 +10,7 @@
     margin-inline-start: 1em;
 }
 
-.sticker, .page {
+.sticker, .a4 {
     outline-style: solid;
 }
 
@@ -18,7 +18,7 @@
     width: 2.4in;
     padding: 0.12in;
 }
-.page {
+.a4 {
     width: 8.27in;
     height: 11.69in;
 }

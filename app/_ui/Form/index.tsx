@@ -3,6 +3,7 @@
 import type { ChangeEvent } from "react";
 import SvgDownload from "../SvgDownload";
 import Sticker from "../Sticker";
+import A4 from "../A4";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useId, useRef, useState } from "react";
 import svgUri from "@/lib/svgUri";
 import noImage from "./no-image.svg";
@@ -70,16 +71,50 @@ const Output = ({ title, author, href, image }: OutputProps) => {
     }, [url, title, author, href]);
 
     const stickerHeading = useId();
+    const a4Heading = useId();
 
     return <>
         <section className={styles.output} aria-labelledby={stickerHeading}>
-           <h2 id={stickerHeading}>B/W Sticker 2.4&quot;×{(height ?? 3.19).toFixed(2)}&quot;</h2>
+           <h2 id={stickerHeading}>Sticker 2.4&quot;×{(height ?? 3.19).toFixed(2)}&quot;</h2>
                <div className={styles.sticker} ref={stickerRef}>
                    <SvgDownload download="sticker.svg">
                        <Sticker qr={qr} image={image}
                              title={title}
                              author={author}
                              href={url} />
+                   </SvgDownload>
+              </div>
+        </section>
+        <section className={styles.output} aria-labelledby={stickerHeading}>
+           <h2 id={stickerHeading}>B/W Sticker 2.4&quot;×{(height ?? 3.19).toFixed(2)}&quot;</h2>
+               <div className={styles.sticker}>
+                   <SvgDownload download="sticker-monochrome.svg">
+                       <Sticker qr={qr} image={image}
+                             title={title}
+                             author={author}
+                             href={url} monochrome={true}/>
+                   </SvgDownload>
+              </div>
+        </section>
+        <section className={styles.output} aria-labelledby={a4Heading}>
+           <h2 id={a4Heading}>A4</h2>
+               <div className={styles.a4}>
+                   <SvgDownload download="a4.svg">
+                       <A4 qr={qr} image={image}
+                             title={title}
+                             author={author}
+                             href={url} />
+                   </SvgDownload>
+              </div>
+        </section>
+        <section className={styles.output} aria-labelledby={a4Heading}>
+           <h2 id={a4Heading}>B/W A4</h2>
+               <div className={styles.a4}>
+                   <SvgDownload download="a4-monochrome.svg">
+                       <A4 qr={qr} image={image}
+                             title={title}
+                             author={author}
+                             href={url} monochrome={true}/>
                    </SvgDownload>
               </div>
         </section>

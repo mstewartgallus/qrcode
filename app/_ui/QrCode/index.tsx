@@ -1,5 +1,3 @@
-import { useId } from "react";
-import FilterMonochrome from "../FilterMonochrome";
 
 // FIXME... just have a 2d array thing
 interface QrCodeIface {
@@ -41,9 +39,8 @@ interface Props {
 
 const QrCode = ({ qr, positionMarker }: Props) => {
     const count = qr.getModuleCount();
-    const monochromeId = useId();
     return <g>
-        <g>
+           <g>
               {
                   iter(count, ii =>
                       iter(count, jj => {
@@ -57,11 +54,8 @@ const QrCode = ({ qr, positionMarker }: Props) => {
                       })
                   )
               }
-        </g>
-        <filter id={monochromeId}>
-            <FilterMonochrome />
-        </filter>
-        <g filter={`url(#${monochromeId})`}>
+           </g>
+           <g>
                <image x={2} y={2} href={positionMarker} width={3} height={3} />
                <image x={count - 5} y={2} href={positionMarker} width={3} height={3} />
                <image x={2} y={count - 5} href={positionMarker} width={3} height={3} />
