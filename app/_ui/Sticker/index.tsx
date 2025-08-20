@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, useId } from "react";
+import { startTransition, useCallback, useEffect, useState, useId } from "react";
 import QrCode from "../QrCode";
 
 // FIXME... just have a 2d array thing
@@ -75,13 +75,13 @@ const Sticker = ({ qr, title, author, href, image }: Props) => {
     const qrcodeId = useId();
 
     const formatTitleAction = useCallback(async (lines: number) => {
-        setTitleLines(lines);
+        startTransition(() => setTitleLines(lines));
     }, []);
     const formatAuthorAction = useCallback(async (lines: number) => {
-        setAuthorLines(lines);
+        startTransition(() => setAuthorLines(lines));
     }, []);
     const formatHrefAction = useCallback(async (lines: number) => {
-        setHrefLines(lines);
+        startTransition(() => setHrefLines(lines));
     }, []);
 
     const count = qr.getModuleCount();
