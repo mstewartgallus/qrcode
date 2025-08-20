@@ -68,9 +68,9 @@ const QrCode = ({ qr, positionMarker }: Props) => {
             <filter id={clipId}>
                <feComponentTransfer>
                    <feFuncA type="table" tableValues="0 1" />
-                   <feFuncR type="table" tableValues="0.3" />
-                   <feFuncG type="table" tableValues="0.3" />
-                   <feFuncB type="table" tableValues="0.3" />
+                   <feFuncR type="table" tableValues="0.1" />
+                   <feFuncG type="table" tableValues="0.1" />
+                   <feFuncB type="table" tableValues="0.1" />
                </feComponentTransfer>
             </filter>
            <symbol id={positionId} width={3} height={3} viewBox="0 0 8 8">
