@@ -3,7 +3,7 @@ import Form from "./_ui/Form";
 
 const IndexPage = async () => {
     return <>
-        <h1>QRCode Generator</h1>
+        <h1>Flier/Sticker Generator</h1>
         <Form />
       </>;
 };
@@ -11,5 +11,5 @@ const IndexPage = async () => {
 export default IndexPage;
 
 export const metadata: Metadata = {
-  title: "QRCode Generator"
+  title: "Flier/Sticker Generator"
 };
