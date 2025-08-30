@@ -11,7 +11,7 @@ interface WrapProps {
 
 const Wrap = ({ children, layoutAction }: WrapProps) => {
     const ref = useRef<HTMLDivElement>(null);
-    const [svg, setSvg] = useState(null);
+    const [svg, setSvg] = useState<string | null>(null);
     // FIXME... seems very ick
     useLayoutEffect(() => {
         const newSvg = (ref.current!.lastChild as HTMLElement).outerHTML;
